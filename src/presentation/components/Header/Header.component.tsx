@@ -1,66 +1,81 @@
+import { format, Locale, set } from "date-fns";
+import { Button, ButtonGroup } from "@nextui-org/react";
+import React from "react";
+import HeaderController from "./Header.controller";
+import { capitalize } from "@/utils/capitalize";
 
-
-import { format, set } from "date-fns";
-import { useStore } from "../../store/calendar.store";
-import CalendarNav from "../Nav/CalendarNav.component";
-import CreateEventButton from "../Button/Button.component";
+export interface ConfigHeader {
+  title: React.ReactNode;
+  buttonText: string;
+  buttonClass: string;
+  navButtons: { title: string; id: string }[];
+  iconPrev: React.ReactNode;
+  iconNext: React.ReactNode;
+  buttonEvent: {
+    icon?: React.ReactNode;
+    text: string;
+    className?: string;
+  };
+}
 
 interface CalendarHeaderProps {
-  configHeader: {
-    title: React.ReactNode;
-    buttonText: string;
-    buttonClass: string;
-  }
+  locale?: Locale;
+  configHeader: ConfigHeader
 }
 
-const CalendarHeader: React.FC<CalendarHeaderProps> = ({configHeader}) => {
-    const { monthIndex, setMonthIndex } = useStore((state) => ({
-        monthIndex: state.monthIndex,
-        setMonthIndex: state.setMonthIndex,
-      }));
-  const handlePrevMonth= () => {
-    setMonthIndex(monthIndex - 1);
-  }
-  const handleNextMonth= () => {
-    setMonthIndex(monthIndex + 1);
-  }
-  const handleReset = () => {
-    setMonthIndex(
-      monthIndex === new Date().getMonth()
-        ? monthIndex + Math.random()
-        : new Date().getMonth()
-    );
-  }
+const CalendarHeader: React.FC<CalendarHeaderProps> = ({ configHeader, locale }) => {
+  const {
+    monthIndex,
+    handlePrevMonth,
+    handleNextMonth,
+    handleReset,
+    selectedView,
+    setView,
+    setShowEventModal,
+  } = HeaderController();
   return (
     <header className="px-4 py-2 flex items-center justify-between">
-      <div className="px-4 py-2 flex items-center">
-      {configHeader.title}
-      <button
-        onClick={handleReset}
-        className={`border rounded py-2 px-4 mr-5 ${configHeader.buttonClass}`}
-      >
-        {configHeader.buttonText}
-      </button>
-      <button onClick={handlePrevMonth}>
-        <span className=" cursor-pointer text-gray-600 mx-2">
-          chevron_left
-        </span>
-      </button>
-      <button onClick={handleNextMonth}>
-        <span className=" cursor-pointer text-gray-600 mx-2">
-          chevron_right
-        </span>
-      </button>
-      <h2 className="ml-4 text-xl text-gray-500 font-bold">
-       
-        {format(set(new Date(), { month: monthIndex }), "MMMM yyyy")}
-      </h2>
+        <ButtonGroup>
+          <Button variant="shadow"  className="bg-gray-100 text-primary">Calendar</Button>
+          <Button variant= "ghost" className="bg-gray-100">Listado</Button>
+        </ButtonGroup>
+      <div className="flex gap-4 items-center">
+        <Button className={`text-primary ${configHeader.buttonClass}`} variant="faded" onClick={handleReset}>
+          {configHeader.buttonText}
+        </Button>
+        <div className="flex items-center gap-8">
+
+        <Button isIconOnly radius="full" className="bg-white" variant="shadow" onClick={handlePrevMonth}>{configHeader.iconPrev}</Button>
+        <h3 className="text-gray-400">{capitalize(format(set(new Date(), { month: monthIndex }), "MMMM yyyy", {locale}))}</h3>
+        <Button isIconOnly radius="full" className="bg-white" variant="shadow" onClick={handleNextMonth}>{configHeader.iconNext}</Button>
+        </div>
+
       </div>
-      
-      <CalendarNav />
-      <CreateEventButton />
+      <div className="flex gap-4 items-center">
+        <ButtonGroup>
+          {configHeader.navButtons?.map((button) => (
+            <Button
+              key={button.id}
+              variant={selectedView?.id === button.id ? "shadow" : "ghost"}
+              onClick={() => setView(button)}
+              className={`${
+                selectedView?.id === button.id ? "text-primary" : ""
+              } bg-gray-100`}
+            >
+              {button.title}
+            </Button>
+          ))}
+        </ButtonGroup>
+        <Button
+          className={`bg-primary text-white ${configHeader.buttonEvent.className}`}
+          onClick={() => setShowEventModal(true)}
+          startContent={configHeader.buttonEvent.icon}
+        >
+          {configHeader.buttonEvent.text}
+        </Button>
+      </div>
     </header>
   );
-}
+};
 
 export default CalendarHeader;

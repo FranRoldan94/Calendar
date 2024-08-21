@@ -5,16 +5,9 @@ interface LabelsProps {
   labelOptions: Label[];
 }
 
-const defaultLabels: Label[] = [
-  { label: "indigo", checked: true, color: "indigo-500", type: "indigo" },
-  { label: "gray", checked: true, color: "gray-500", type: "gray" },
-  { label: "green", checked: true, color: "green-500", type: "green" },
-  { label: "blue", checked: true, color: "blue-500", type: "blue" },
-  { label: "red", checked: true, color: "red-500", type: "red" },
-  { label: "purple", checked: true, color: "purple-500", type: "purple" },
-];
 
-const Labels: React.FC<LabelsProps> = ({ labelOptions = defaultLabels }) => {
+
+const Labels: React.FC<LabelsProps> = ({ labelOptions }) => {
   const { labels, updateLabel, setLabels } = useStore((state) => ({
     setLabels: state.setLabels,
     labels: state.labels,
