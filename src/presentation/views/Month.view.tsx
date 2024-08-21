@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { getMonthMatrix } from '../../utils/calendarDay'
 import Day from '../components/Day/Day.component'
 import { useStore } from '../store/calendar.store';
+import { Locale } from 'date-fns';
 
 interface MonthViewProps { 
     renderDayType?: React.ReactNode
+    locale?: Locale
 }
 
-const MonthView: React.FC<MonthViewProps> = ({renderDayType}) => {
+const MonthView: React.FC<MonthViewProps> = ({renderDayType, locale}) => {
     const [currentMonth, setCurrentMonth] = useState<Date[][]>(getMonthMatrix());
 
     const { monthIndex } = useStore((state) => ({
@@ -23,7 +25,7 @@ const MonthView: React.FC<MonthViewProps> = ({renderDayType}) => {
                 return (
                     <React.Fragment key={index}>
                     {week.map((day, idx) => {
-                        return <Day key={idx} day={day} rowIdx={index} renderDayType={renderDayType} />
+                        return <Day key={idx} day={day} rowIdx={index} renderDayType={renderDayType} locale={locale} />
                     })}
                     </React.Fragment>
                 )

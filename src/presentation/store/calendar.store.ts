@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { getMonth } from 'date-fns';
 
-type EventType = "push" | "update" | "delete";
+type EventType = "push" | "update" | "delete" | "saveAll";
 
 export interface Label {
   label: string;
@@ -18,6 +18,7 @@ export interface Event {
     title: string;
     description: string;
     day: Date | number;
+    endDate?: Date;
     [key: string]: unknown;
   }
   
@@ -30,8 +31,8 @@ export interface Event {
     smallCalendarMonth: number | null;
     setSmallCalendarMonth: (smallCalendarMonth: number ) => void;
   
-    daySelected: Date;
-    setDaySelected: (daySelected: Date) => void;
+    dateSelected: Date;
+    setDateSelected: (dateSelected: Date) => void;
   
     showEventModal: boolean;
     setShowEventModal: (showEventModal: boolean) => void;
@@ -44,6 +45,7 @@ export interface Event {
     updateLabel: (updatedLabel: Label) => void;
   
     savedEvents: Event[];
+    setSavedEvents: (savedEvents: Event[]) => void;
     dispatchCallEvent: (action: { type: EventType; payload: Event }) => void;
   
     filteredEvents: () => Event[];
@@ -59,8 +61,8 @@ export const useStore = create<StoreState>((set, get) => ({
     set({ monthIndex: smallCalendarMonth });
   },
 
-  daySelected: new Date(), 
-  setDaySelected: (daySelected) => set({ daySelected }),
+  dateSelected: new Date(), 
+  setDateSelected: (dateSelected) => set({ dateSelected }),
 
   showEventModal: false,
   setShowEventModal: (showEventModal: boolean) => {
@@ -88,8 +90,11 @@ export const useStore = create<StoreState>((set, get) => ({
     const storageEvents = localStorage.getItem("savedEvents");
     return storageEvents ? JSON.parse(storageEvents) : [];
   })(),
+  setSavedEvents: (savedEvents) => {
+    set({ savedEvents });
+    localStorage.setItem("savedEvents", JSON.stringify(savedEvents));
+  },
   dispatchCallEvent: (action) => {
-    console.log('first', action.payload)
     switch (action.type) {
       case "push":
         set({ savedEvents: [...get().savedEvents, action.payload] });
@@ -114,12 +119,10 @@ export const useStore = create<StoreState>((set, get) => ({
 
   filteredEvents: () => {
     const { savedEvents, labels } = get();
-    const returnedEvents = savedEvents.filter((evt) =>
-      labels.filter((lbl) => lbl.checked).map((lbl) => lbl.type).includes(evt.label.type)
-    );
-    console.log('returnedEvents', returnedEvents)
-    return savedEvents.filter((evt) =>
-      labels.filter((lbl) => lbl.checked).map((lbl) => lbl.type).includes(evt.label.type)
-    );
+    const returnedEvents = savedEvents.filter((evt) => {
+      return evt.label ? labels.filter((lbl) => lbl.checked).map((lbl) => lbl.type).includes(evt.label.type) : evt
+    });
+
+    return returnedEvents
   },
 }));
